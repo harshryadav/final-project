@@ -17,7 +17,7 @@ yfinance>=0.2.18
 alpha-vantage>=2.3.1
 
 # Technical Analysis
-TA-Lib>=0.4.25
+# TA-Lib>=0.4.25
 
 # Visualization
 matplotlib>=3.7.0
