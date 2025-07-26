@@ -27,6 +27,7 @@ class ModelTrainer:
             verbose: Whether to print training progress
         """
         self.verbose = verbose
+        self.last_model_config = None
     
     def create_model(self, 
                      input_shape: Tuple[int, int],
@@ -54,6 +55,9 @@ class ModelTrainer:
         # Update with user config
         if config:
             default_config.update(config)
+        
+        # Store config for later use
+        self.last_model_config = default_config.copy()
         
         if self.verbose:
             print("Creating Transformer model:")
@@ -122,12 +126,12 @@ class ModelTrainer:
                 verbose=1 if self.verbose else 0
             ),
             
-            # Save best model
+            # Save best model weights
             callbacks.ModelCheckpoint(
-                filepath=model_save_path,
+                filepath=f"{model_save_path}.weights.h5",
                 monitor='val_loss',
                 save_best_only=True,
-                save_format='tf',
+                save_weights_only=True,
                 verbose=1 if self.verbose else 0
             )
         ]
@@ -192,8 +196,17 @@ class ModelTrainer:
             print(f"Training completed in {training_time:.2f} seconds")
             print(f"Best model saved to: {model_save_path}")
         
-        # Save final model
-        model.save(model_save_path, save_format='tf')
+        # Save final model weights and config
+        model.save_weights(f"{model_save_path}.weights.h5")
+        
+        # Save model configuration for reconstruction
+        import json
+        model_config = {
+            'input_shape': (X_train.shape[1], X_train.shape[2]),
+            'config': self.last_model_config
+        }
+        with open(f"{model_save_path}_config.json", 'w') as f:
+            json.dump(model_config, f)
         
         return {
             'history': history.history,
@@ -205,17 +218,35 @@ class ModelTrainer:
     
     def load_model(self, model_path: str) -> keras.Model:
         """
-        Load a trained model
+        Load a trained model from weights and config
         
         Args:
-            model_path: Path to saved model
+            model_path: Base path to saved model (without extension)
             
         Returns:
             Loaded Transformer model
         """
-        model = keras.models.load_model(model_path)
+        import json
+        
+        # Load model configuration
+        config_path = f"{model_path}_config.json"
+        weights_path = f"{model_path}.weights.h5"
+        
+        with open(config_path, 'r') as f:
+            model_config = json.load(f)
+        
+        # Recreate the model
+        model = self.create_model(
+            input_shape=model_config['input_shape'],
+            config=model_config['config']
+        )
+        
+        # Load the weights
+        model.load_weights(weights_path)
+        
         if self.verbose:
-            print(f"Model loaded from: {model_path}")
+            print(f"Model loaded from: {weights_path}")
+        
         return model
     
     def predict(self, 
