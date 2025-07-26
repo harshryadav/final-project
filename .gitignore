@@ -52,7 +52,7 @@ demo_results/
 *.log
 
 # Model files (ignore saved models during development)
-models/
+# models/
 *.h5
 *.pkl
 *.joblib
