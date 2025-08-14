@@ -108,6 +108,16 @@ Dense Layer: Final processing
 Output: Single predicted price
 ```
 
+The following diagram illustrates the complete end-to-end architecture of the project, from data ingestion to final evaluation.
+
+![Project Architecture](architecture-diagram.png)
+
+**Key Components:**
+- **Multi-Head Attention**: Focuses on important time periods
+- **Positional Encoding**: Understands sequence order
+- **Feed-Forward Networks**: Processes patterns
+- **Layer Normalization**: Stabilizes training
+
 **Transformer Components:**
 - **Multi-Head Attention**: Focuses on important time periods
 - **Positional Encoding**: Understands sequence order
