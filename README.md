@@ -43,7 +43,7 @@ pip install -r requirements.txt
 ```
 
 **Troubleshooting:**
-- If `python3` doesn't work, try `python`
+- If `python` doesn't work, try `python3`
 - If `pip` fails, try `pip3` or add `--user` flag
 - On macOS, you might need: `xcode-select --install`
 
