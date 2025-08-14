@@ -132,6 +132,119 @@ Static Variable Encoder + Historical Encoder
 → Temporal Decoder → Output Layer
 ```
 
+Below is a detailed, end-to-end breakdown of the data and model architecture for both the Transformer and TFT implementations.
+
+### End-to-End Workflow
+
+Both models follow the same initial data processing pipeline:
+
+1.  **Data Fetching**:
+    *   **Input**: Stock Symbol (e.g., `AAPL`), Start Date, End Date.
+    *   **Action**: Use the `yfinance` library to download historical daily data (Open, High, Low, Close, Volume).
+    *   **Output**: A raw `pandas.DataFrame`.
+
+2.  **Feature Engineering & Preprocessing**:
+    *   **Input**: The raw DataFrame.
+    *   **Action**:
+        *   Calculate a rich set of technical indicators (SMA, EMA, MACD, RSI, Bollinger Bands, Volatility).
+        *   Select the features to be used in the model (e.g., `Close`, `Volume`, `RSI`).
+        *   Scale all selected features to a common range using `StandardScaler` or `MinMaxScaler`.
+    *   **Output**: A scaled DataFrame of engineered features.
+
+3.  **Sequence Creation**:
+    *   **Input**: The scaled feature DataFrame.
+    *   **Action**: Create overlapping time-series sequences. For each sample, the input (`X`) is a window of the last `N` days (e.g., 60 days), and the target (`y`) is the 'Close' price of the following day.
+    *   **Output**: `(X_train, y_train)`, `(X_val, y_val)`, and `(X_test, y_test)` NumPy arrays ready for training.
+
+---
+
+#### 1. Transformer (TensorFlow/Keras) Architecture
+
+The Transformer model processes the sequences to capture temporal patterns and predict the *change* in the next day's stock price.
+
+```
+[Input Sequence (Batch, 60, 7)]
+           │
+           ▼
+┌──────────────────────────┐
+│  Input Projection (Dense)│  (Projects 7 features to 128)
+└──────────────────────────┘
+           │
+           ▼
+┌──────────────────────────┐
+│  Positional Encoding     │  (Adds time-step information)
+└──────────────────────────┘
+           │
+           ▼
+┌──────────────────────────┐
+│  Transformer Encoder x4  │
+│  ┌─────────────────────┐ │
+│  │ Multi-Head Attention│ │  (Learns relationships across the 60 days)
+│  └─────────────────────┘ │
+│  ┌─────────────────────┐ │
+│  │ Feed-Forward Network│ │
+│  └─────────────────────┘ │
+└──────────────────────────┘
+           │
+           ▼
+┌──────────────────────────┐
+│ Global Average Pooling   │  (Condenses the sequence into one vector)
+└──────────────────────────┘
+           │
+           ▼
+┌──────────────────────────┐
+│  Output Head (Dense)     │  (Outputs a single value: the predicted price *delta*)
+└──────────────────────────┘
+           │
+           ▼
+┌──────────────────────────┐
+│  Final Price Calculation │  (Last Close Price + Predicted Delta)
+└──────────────────────────┘
+           │
+           ▼
+  [Predicted Stock Price]
+```
+
+---
+
+#### 2. Temporal Fusion Transformer (TFT) (PyTorch) Architecture
+
+The TFT model uses specialized components like variable selection networks and an LSTM to interpret the time-series data.
+
+```
+[Input Sequence (Batch, 60, 7)]
+           │
+           ▼
+┌──────────────────────────┐
+│ Variable Selection Net   │  (Learns which features are important at each time step)
+└──────────────────────────┘
+           │
+           ▼
+┌──────────────────────────┐
+│  LSTM Encoder            │  (Processes the weighted features sequentially)
+└──────────────────────────┘
+           │
+           ▼
+┌──────────────────────────┐
+│  Multi-Head Attention    │  (Focuses on the most relevant past time steps)
+│  - Query: LSTM State     │
+│  - Key/Value: LSTM Output│
+└──────────────────────────┘
+           │
+           ▼
+┌──────────────────────────┐
+│ Gated Residual Network   │  (Post-attention processing)
+└──────────────────────────┘
+           │
+           ▼
+┌──────────────────────────┐
+│  Output Head (Linear)    │  (Outputs a single value: the predicted price)
+└──────────────────────────┘
+           │
+           ▼
+  [Predicted Stock Price]
+```
+
 ---
 
 ## License
