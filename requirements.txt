@@ -1,41 +1,26 @@
-# Core Deep Learning
+# Core ML libraries
 torch>=2.0.0
-torchvision>=0.15.0
-pytorch-lightning>=2.0.0
-
-# TensorFlow/Keras for Informer & LSTM (as specified in proposal)
 tensorflow>=2.13.0
-keras>=2.13.0
+numpy>=1.21.0
+pandas>=1.3.0
+scikit-learn>=1.0.0
 
-# Data Processing and Analysis
-pandas>=1.5.0
-numpy>=1.24.0
-scikit-learn>=1.3.0
+# Data visualization
+matplotlib>=3.5.0
+seaborn>=0.11.0
 
-# Financial Data APIs
-yfinance>=0.2.18
-alpha-vantage>=2.3.1
+# Financial data
+yfinance>=0.2.0
 
-# Technical Analysis
-# TA-Lib>=0.4.25
+# Data processing
+scipy>=1.7.0
 
-# Visualization
-matplotlib>=3.7.0
-seaborn>=0.12.0
-plotly>=5.15.0
+# Progress bars
+tqdm>=4.62.0
 
-# Model Tracking and Visualization
-wandb>=0.15.0
-tensorboard>=2.13.0
-
-# Jupyter Notebook Support
+# Jupyter notebooks
 jupyter>=1.0.0
-ipykernel>=6.0.0
+ipython>=7.0.0
 
-# Additional Utilities
-tqdm>=4.65.0
-requests>=2.31.0
-
-# Additional dependencies for Transformer implementation
-einops>=0.6.0
-scipy>=1.11.0 
+# Additional utilities
+requests>=2.25.0

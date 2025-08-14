@@ -16,39 +16,35 @@ warnings.filterwarnings('ignore')
 
 from main import StockForecastingPipeline
 
-def run_quick_demo():
-    """
-    Run a quick demo with reduced parameters for fast testing
-    """
-    print("Quick Demo - Stock Forecasting with Transformer")
+def run_quick_demo(symbol, model_name):
+    print(f"Quick Demo - Stock Forecasting with {model_name.upper()} on {symbol}")
     print("="*60)
     
-    # Simple config for quick demo
     demo_config = {
-        'symbol': 'AAPL',
-        'sequence_length': 30,  # Shorter for demo
-        'epochs': 10,           # Just 10 epochs for demo
-        'batch_size': 16,       # Smaller batch
+        'model': model_name,
+        'symbol': symbol,
+        'sequence_length': 30,
+        'epochs': 10,
+        'batch_size': 16,
         'model_config': {
-            'd_model': 128,     # Model dimension
-            'num_heads': 4,     # Attention heads
-            'num_layers': 2,    # Transformer layers
-            'dff': 256,         # Feed-forward dimension
-            'dropout_rate': 0.1 # Dropout rate
+            'd_model': 128,
+            'num_heads': 4,
+            'num_layers': 2,
+            'dff': 256,
+            'dropout_rate': 0.1
         }
     }
     
-    # Run pipeline
     pipeline = StockForecastingPipeline(demo_config)
     results = pipeline.run_complete_pipeline()
-    
+        
     print("\nDemo completed!")
     print("For full training: python main.py")
     print("Check README.md for detailed documentation")
-    
     return results
 
-def run_data_only_demo():
+def run_data_only_demo(symbol):
+
     """
     Demo that only shows data processing (very fast)
     """
@@ -61,7 +57,7 @@ def run_data_only_demo():
     # 1. Fetch data
     print("\n1. Fetching AAPL data...")
     fetcher = StockDataFetcher()
-    data = fetcher.fetch_stock_data('AAPL', '2019-01-01', '2024-01-01')
+    data = fetcher.fetch_stock_data(symbol, '2019-01-01', '2024-01-01')
     print(f"   Fetched {len(data)} records")
     
     # 2. Preprocess
@@ -95,14 +91,20 @@ if __name__ == "__main__":
     import argparse
     
     parser = argparse.ArgumentParser(description='Demo Script')
+    parser.add_argument('--model', type=str, default='transformer', choices=['transformer', 'tft'],
+                        help='Model to use: transformer or tft')
+    parser.add_argument('--symbol', type=str, default='AAPL',
+                        help='Stock ticker symbol (e.g., AAPL, NVDA)')
     parser.add_argument('--data-only', action='store_true',
-                       help='Run data processing demo only (no training)')
+                        help='Run data processing demo only (no training)')
     args = parser.parse_args()
+
     
     if args.data_only:
-        results = run_data_only_demo()
+        results = run_data_only_demo(args.symbol)
     else:
-        results = run_quick_demo()
+        results = run_quick_demo(args.symbol, args.model)
+
     
     print("\n" + "="*60)
     print("Demo completed. Thank you for trying our stock forecasting system!")

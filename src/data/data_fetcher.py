@@ -44,43 +44,39 @@ class StockDataFetcher:
     
     def fetch_stock_data_yfinance_fixed(self, tickers, start_date, end_date, retries=3):
         """
-        Fetch stock data using yfinance with SSL issue fixes
+        Fetch stock data using yfinance without breaking its internal session handling.
         """
         for attempt in range(retries):
             try:
-                print(f"Attempt {attempt + 1}: Fetching data with SSL fixes...")
-                
-                # Method 1: Disable SSL verification temporarily
+                print(f"Attempt {attempt + 1}: Fetching data with yfinance...")
+
+                # Temporarily disable SSL verification if needed
                 import ssl
                 ssl._create_default_https_context = ssl._create_unverified_context
-                
-                # Configure yfinance session
-                session = requests.Session()
-                session.verify = False
-                
-                # Fetch data
+
+                # ✅ Let yfinance manage its own session
                 data = yf.download(
-                    tickers, 
-                    start=start_date, 
+                    tickers,
+                    start=start_date,
                     end=end_date,
-                    session=session,
-                    progress=False
+                    progress=False,
+                    threads=True
                 )
-                
+
                 if not data.empty:
-                    print("Successfully fetched data with SSL fix!")
+                    print("✅ Successfully fetched data with yfinance!")
                     return data
-                
+
             except Exception as e:
                 print(f"Attempt {attempt + 1} failed: {e}")
                 if attempt < retries - 1:
-                    print("Trying next method...")
-                    continue
+                    print("Trying again...")
                 else:
-                    print("All yfinance attempts failed. Switching to alternative method.")
-        
+                    print("❌ All yfinance attempts failed. Switching to alternative method.")
+
         return None
-    
+
+        
     def fetch_stock_data_alternative_api(self, tickers, start_date, end_date):
         """
         Alternative API approach using direct requests

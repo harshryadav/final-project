@@ -1,230 +1,145 @@
-# Stock Price Forecasting with Transformers
+# Stock Price Forecasting with Transformer & Temporal Fusion Transformer (TFT)
 
-A Transformer-based neural network for predicting stock prices using time series data.
+This project implements **two state-of-the-art deep learning architectures** for short-term stock price forecasting:
+1. **Transformer** (TensorFlow/Keras)
+2. **Temporal Fusion Transformer (TFT)** (PyTorch)
 
-## Quick Start
+It supports multiple stock symbols, customizable hyperparameters, automatic technical indicator generation, and detailed evaluation metrics.
 
-Get up and running in 3 simple steps:
+---
 
-```bash
-# 1. Install dependencies
-pip install -r requirements.txt
+## Features
 
-# 2. Run the model on Apple stock
-python3 main.py --symbol AAPL
+- **Dual-Model Support** → Transformer (fast & accurate) and TFT (interpretable, multi-horizon forecasting)
+- **Configurable Parameters** → Sequence length, features, batch size, learning rate, patience
+- **Automatic Mixed Precision (AMP)** → Faster GPU training with reduced memory usage
+- **Dynamic Close Index Detection** → No hardcoded target index
+- **Rich Feature Engineering** → SMA, EMA, MACD, RSI, Bollinger Bands
+- **Complete Evaluation** → MAE, RMSE, MAPE, R², Directional Accuracy, Sharpe Ratio, Total Return
+- **Live Demo Script** (`demo.py`) → Quick training/inference without full training
 
-# 3. Check results in the results/ folder
-```
-
-The model will automatically handle data fetching, training, and evaluation.
-
-## What This Does
-
-This system:
-- **Downloads** historical stock data (or uses realistic mock data if APIs fail)
-- **Processes** the data with technical indicators (moving averages, RSI, etc.)
-- **Trains** a Transformer neural network to learn price patterns
-- **Predicts** next-day stock prices
-- **Evaluates** performance with standard metrics (MAE, RMSE, MAPE, R²)
-- **Generates** visualizations and reports
+---
 
 ## Installation
 
-### Requirements
-- Python 3.8+
+### Prerequisites
+- Python **3.8+**
 - pip
 
 ### Setup
 ```bash
-# Clone the repository
+# 1. Clone the repository
 git clone <your-repo-url>
-cd final-project
+cd final-project-main
 
-# Install dependencies
+# 2. Create a virtual environment
+python -m venv venv
+source venv/bin/activate      # Linux/Mac
+venv\Scripts\activate       # Windows
+
+# 3. Install dependencies
+pip install --upgrade pip
 pip install -r requirements.txt
-
-# Test the installation
-python3 demo.py
 ```
 
-**Troubleshooting:**
-- If `python3` doesn't work, try `python`
-- If `pip` fails, try `pip3` or add `--user` flag
-- On macOS, you might need: `xcode-select --install`
+---
 
 ## Usage
 
-### Basic Usage
+### **Train & Evaluate**
+
+#### Transformer (AAPL example)
 ```bash
-# Train on different stocks
-python3 main.py --symbol AAPL    # Apple
-python3 main.py --symbol TSLA    # Tesla
-python3 main.py --symbol GOOGL   # Google
-
-# Quick demo (2-3 minutes)
-python3 demo.py
+python main.py --model transformer --symbol AAPL --sequence-length 60 --batch-size 256 --epochs 50 --learning-rate 1e-4 --patience 7
 ```
 
-### Advanced Options
+#### TFT (NVDA example)
 ```bash
-# Customize training
-python3 main.py --symbol AAPL --epochs 200 --sequence-length 30
-python3 main.py --symbol TSLA --batch-size 16 --learning-rate 0.001
-
-# See all options
-python3 main.py --help
+python main.py --model tft --symbol NVDA --sequence-length 60 --batch-size 256 --epochs 50 --learning-rate 3e-4 --patience 7
 ```
 
-### Output Files
-After training, check these folders:
-- `results/` - Performance metrics and reports
-- `plots/` - Training curves and prediction visualizations  
-- `models/` - Saved model weights
+**Key CLI Arguments**
+| Argument | Description | Example |
+|----------|-------------|---------|
+| `--model` | Model type (`transformer` / `tft`) | `--model transformer` |
+| `--symbol` | Stock ticker | `--symbol AAPL` |
+| `--sequence-length` | Lookback window size | `--sequence-length 60` |
+| `--prediction-horizon` | Days ahead to predict | `--prediction-horizon 1` |
+| `--epochs` | Training epochs | `--epochs 50` |
+| `--batch-size` | Training batch size | `--batch-size 256` |
+| `--learning-rate` | Learning rate | `--learning-rate 1e-4` |
+| `--patience` | Early stopping patience | `--patience 7` |
 
-## Model Architecture
+---
 
-```
-Input: [Batch, Sequence_Length, Features]
-   ↓
-Input Projection: Linear layer to model dimension
-   ↓
-Positional Encoding: Add position information
-   ↓
-Transformer Blocks (Multiple layers):
-┌─────────────────────────────────────┐
-│  Multi-Head Self-Attention          │
-│           ↓                         │
-│  Add & Layer Normalization          │
-│           ↓                         │
-│  Feed-Forward Network               │
-│           ↓                         │
-│  Add & Layer Normalization          │
-└─────────────────────────────────────┘
-   ↓
-Global Average Pooling: Aggregate sequence information
-   ↓
-Dense Layer: Final processing
-   ↓
-Output: Single predicted price
+### **Quick Demo**
+Run a short demo with reduced parameters:
+```bash
+python demo.py --model transformer --symbol AAPL
+python demo.py --model tft --symbol NVDA
 ```
 
-The following diagram illustrates the complete end-to-end architecture of the project, from data ingestion to final evaluation.
+Run only data processing (no training):
+```bash
+python demo.py --data-only --symbol TSLA
+```
 
-![Project Architecture](architecture-diagram.png)
+---
 
-**Key Components:**
-- **Multi-Head Attention**: Focuses on important time periods
-- **Positional Encoding**: Understands sequence order
-- **Feed-Forward Networks**: Processes patterns
-- **Layer Normalization**: Stabilizes training
+## Final Results (Interim → Final)
 
-**Transformer Components:**
-- **Multi-Head Attention**: Focuses on important time periods
-- **Positional Encoding**: Understands sequence order
-- **Feed-Forward Networks**: Processes patterns
-- **Layer Normalization**: Stabilizes training
+| Model       | Symbol | R² Score (Interim) | R² Score (Final) | MAE Final | RMSE Final |
+|-------------|--------|-------------------|------------------|-----------|------------|
+| Transformer | AAPL   | -0.4468           | **0.9066**       | 0.079     | 0.101      | 
+| TFT         | NVDA   | 0.0707            | 0.1257           | 0.602     | 0.754      | 
 
-**Default Configuration:**
-- 802K parameters
-- 60-day input sequences
-- 4 transformer layers
-- 8 attention heads
+Transformer → **Major accuracy improvement** after efficiency optimizations
+TFT → Minor gains, requires further hyperparameter tuning.
 
-## Performance Metrics
-
-The model reports these metrics:
-- **MAE**: Mean Absolute Error (average prediction error)
-- **RMSE**: Root Mean Square Error (penalizes large errors)
-- **MAPE**: Mean Absolute Percentage Error (scale-independent)
-- **R²**: Coefficient of determination (variance explained)
+---
 
 ## Project Structure
 
 ```
-final-project/
-├── main.py              # Main pipeline
-├── demo.py              # Quick demo
-├── requirements.txt     # Dependencies
-├── README               # This document
-├── src/
-│   ├── data/           # Data fetching & preprocessing
-│   ├── models/         # Transformer implementation
-│   └── evaluation/     # Metrics & visualization
-├── results/            # Generated results
-├── plots/              # Generated plots
-└── models/             # Saved models
+final-project-main/
+├── main.py               # Main training & evaluation pipeline
+├── trainer.py            # PyTorch training loop for TFT
+├── transformer.py        # Transformer model
+├── tft.py                # Temporal Fusion Transformer model
+├── stock_preprocessor.py # Data preprocessing & feature engineering
+├── demo.py               # Quick demo script
+├── requirements.txt      # Python dependencies
+├── results/              # Metrics and reports
+├── plots/                # Generated plots
+└── models/               # Saved model checkpoints
 ```
-
-## Key Features
-
-- **Robust Data Fetching**: Multiple fallback sources + mock data generation
-- **Technical Indicators**: SMA, EMA, MACD, RSI, Bollinger Bands
-- **Early Stopping**: Prevents overfitting
-- **Comprehensive Metrics**: Financial and statistical evaluation
-- **Professional Visualizations**: Training curves and prediction plots
-- **Easy Configuration**: Command-line arguments or config modification
-
-## Data Pipeline
-
-1. **Fetch**: Downloads OHLCV data from Yahoo Finance (with fallbacks)
-2. **Engineer**: Calculates 15+ technical indicators
-3. **Process**: Scales, sequences, and splits data
-4. **Train**: Transformer learns price patterns
-5. **Evaluate**: Tests on unseen data
-6. **Visualize**: Generates plots and reports
-
-## Configuration
-
-Edit `main.py` or use command-line arguments:
-
-```python
-# In main.py, modify _get_default_config()
-config = {
-    'symbol': 'AAPL',
-    'sequence_length': 60,     # Days of history
-    'epochs': 100,             # Training iterations
-    'batch_size': 32,          # Training batch size
-    'learning_rate': 1e-4,     # Learning rate
-}
-```
-
-## Examples
-
-**Train a quick model:**
-```bash
-python3 main.py --symbol AAPL --epochs 50
-```
-
-**Train with more data:**
-```bash
-python3 main.py --symbol TSLA --sequence-length 90
-```
-
-**Small model for testing:**
-```bash
-python3 main.py --symbol GOOGL --batch-size 16 --epochs 25
-```
-
-## Troubleshooting
-
-**Common Issues:**
-- **"No module named..."**: Run `pip install -r requirements.txt`
-- **Data fetching fails**: The system automatically falls back to mock data
-- **Out of memory**: Reduce `batch_size` to 16 or 8
-- **Slow training**: Reduce `epochs` or `sequence_length`
-
-## Understanding Results
-
-**Good Performance Indicators:**
-- MAE < $5 (for typical stock prices)
-- MAPE < 20%
-- R² > 0.3
-- Decreasing training loss
-
-**What the Plots Show:**
-- `training_history.png`: Loss curves over epochs
-- `predictions_vs_actual.png`: How well predictions match reality
 
 ---
 
-**Note**: This implementation uses mock data when real APIs are unavailable, ensuring the pipeline always works for demonstration and development purposes.
+## Model Architectures
+
+**Transformer**
+```
+[Input Sequence] → Input Projection → Positional Encoding
+→ Multi-Head Attention → Layer Norm → Feed-Forward → Layer Norm
+→ Global Average Pooling → Dense → Output
+```
+
+**TFT**
+```
+Static Variable Encoder + Historical Encoder
+→ Multi-Head Attention + LSTM Layers
+→ Temporal Decoder → Output Layer
+```
+
+---
+
+## License
+MIT License – free to use, modify, and distribute.
+
+---
+
+## Acknowledgements
+- Yahoo Finance for data
+- PyTorch, TensorFlow/Keras for model implementation
+- Original TFT paper: *Temporal Fusion Transformers for Interpretable Multi-horizon Time Series Forecasting*
