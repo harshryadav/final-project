@@ -29,8 +29,8 @@ It supports multiple stock symbols, customizable hyperparameters, automatic tech
 ### Setup
 ```bash
 # 1. Clone the repository
-git clone <your-repo-url>
-cd final-project-main
+git clone <repo-url>
+cd final-project
 
 # 2. Create a virtual environment
 python -m venv venv
@@ -41,6 +41,11 @@ venv\Scripts\activate       # Windows
 pip install --upgrade pip
 pip install -r requirements.txt
 ```
+
+**Troubleshooting:**
+- If `python3` doesn't work, try `python`
+- If `pip` fails, try `pip3` or add `--user` flag
+- On macOS, you might need: `xcode-select --install`
 
 ---
 
@@ -156,6 +161,12 @@ Both models follow the same initial data processing pipeline:
     *   **Action**: Create overlapping time-series sequences. For each sample, the input (`X`) is a window of the last `N` days (e.g., 60 days), and the target (`y`) is the 'Close' price of the following day.
     *   **Output**: `(X_train, y_train)`, `(X_val, y_val)`, and `(X_test, y_test)` NumPy arrays ready for training.
 
+
+The following diagram illustrates the complete end-to-end architecture of the project, from data ingestion to final evaluation.
+
+![Project Architecture](end-to-end.png)
+
+
 ---
 
 #### 1. Transformer (TensorFlow/Keras) Architecture
@@ -244,13 +255,6 @@ The TFT model uses specialized components like variable selection networks and a
            ▼
   [Predicted Stock Price]
 ```
-
----
-
-## License
-MIT License – free to use, modify, and distribute.
-
----
 
 ## Acknowledgements
 - Yahoo Finance for data
